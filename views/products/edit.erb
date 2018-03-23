@@ -1,0 +1,24 @@
+<h1>Editing Product</h1>
+
+<form action="/products/<%= @product.id %>" method="post">
+  <input type="hidden" name="_method" value="PUT">
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input class="form-control" type="text" name="name" id="name" value="<%= @product.name %>">
+  </div>
+
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea class="form-control" id="description" name="description" rows="3"><%= @product.description %></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="secret">Secret</label>
+    <textarea class="form-control" id="secret" name="secret" rows="3"><%= @product.secret %></textarea>
+  </div>
+
+  <p>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a class="btn btn-link" href="/products">Back</a>
+  </p>
+</form>

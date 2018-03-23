@@ -1,0 +1,39 @@
+<h1>Products</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th colspan="2">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @products.each do |product| %>
+      <tr>
+        <td><%= product.name %></td>
+        <td><%= product.description %></td>
+        <td>
+          <ul class="list-inline">
+            <li class="list-inline-item">
+              <a class="btn btn-link btn-sm" href="/products/<%= product.id %>">Show</a>
+            </li>
+            <li class="list-inline-item">
+              <a class="btn btn-link btn-sm" href="/products/<%= product.id %>/edit">Edit</a>
+            </li>
+            <li class="list-inline-item">
+              <form action="/products/<%= product.id %>" method="post">
+                <input type="hidden" name="_method" value="DELETE">
+                <button class="btn btn-link btn-sm" type="submit">Destroy</button>
+              </form>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<p>
+  <a class="btn btn-link" href="/products/new">New Product</a>
+</p>
