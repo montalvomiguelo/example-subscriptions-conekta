@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gem 'sinatra'
 gem 'sequel'
 gem 'puma'
+gem 'attr_encrypted'
 
 group :production do
   gem 'mysql2'

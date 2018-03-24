@@ -67,4 +67,53 @@ class TestApp < Minitest::Test
     follow_redirect!
     refute last_response.body.include?(product_name)
   end
+
+  def test_registration_page
+    get '/register'
+    assert last_response.ok?
+    assert last_response.body.include?('Register')
+  end
+
+  def test_creating_a_user
+    post '/register', { :name => 'john doe', :email => 'jd@aol.com', :phone => '+52181818181', :password => 'jd' }
+    assert_equal(1, User.count)
+    follow_redirect!
+  end
+
+  def test_login_page
+    get '/login'
+    assert last_response.ok?
+    assert last_response.body.include?('Login')
+  end
+
+  def test_logging_in_a_user
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+    post '/login', { :email => 'jd@aol.com', :password => 'jd' }
+    assert_equal(user.id, last_request.env['rack.session']['id'])
+    follow_redirect!
+  end
+
+  def test_logging_out_a_user
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+    env 'rack.session', { :id => user.id }
+    get '/logout'
+    assert_empty last_request.env['rack.session']
+  end
+
+  def test_edit_user_page
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+    env 'rack.session', { :id => user.id }
+    get '/users/edit'
+    assert last_response.ok?
+    assert last_response.body.include?(user.name)
+  end
+
+  def test_update_a_specific_user
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+    env 'rack.session', { :id => user.id }
+    put "/users/#{user.id}", { :name => 'juan doe' }
+    user.refresh
+    assert_equal('juan doe', user.name)
+    follow_redirect!
+  end
 end

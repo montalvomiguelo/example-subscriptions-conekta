@@ -1,5 +1,12 @@
 class App < Sinatra::Base
   set :method_override, true
+  enable :sessions
+
+  helpers do
+    def current_user
+      @user = User[session[:id]]
+    end
+  end
 
   get '/products' do
     @products = Product.all
@@ -42,5 +49,51 @@ class App < Sinatra::Base
   delete '/products/:id' do
     Product[params[:id]].delete
     redirect '/products'
+  end
+
+  get '/register' do
+    erb :'auth/register'
+  end
+
+  post '/register' do
+    user = User.new
+    user.name = params[:name]
+    user.email = params[:email]
+    user.phone = params[:phone]
+    user.password = params[:password]
+    user.save
+    session[:id] = user.id
+    redirect '/products'
+  end
+
+  get '/login' do
+    erb :'auth/login'
+  end
+
+  post '/login' do
+    user = User.first!(email: params[:email])
+    halt 'Invalid credentials' unless user.password == params[:password]
+    session[:id] = user.id
+    redirect '/products'
+  end
+
+  get '/logout' do
+    session.clear
+  end
+
+  get '/users/edit' do
+    current_user
+    halt 'User not logged in' unless @user
+    erb :'users/edit'
+  end
+
+  put '/users/:id' do
+    current_user
+    @user.name = params[:name] if params[:name]
+    @user.email = params[:email] if params[:email]
+    @user.phone = params[:phone] if params[:phone]
+    @user.password = params[:password] if params[:password]
+    @user.save
+    redirect '/users/edit'
   end
 end
