@@ -1,10 +1,16 @@
 class App < Sinatra::Base
   set :method_override, true
+  set :public_key, ENV['PUBLIC_KEY']
   enable :sessions
 
   helpers do
     def current_user
-      @user = User[session[:id]]
+      @user ||= User[session[:id]]
+    end
+
+    def protected!
+      return if current_user
+      halt 401, 'Not authorized'
     end
   end
 
@@ -82,18 +88,22 @@ class App < Sinatra::Base
   end
 
   get '/users/edit' do
-    current_user
-    halt 'User not logged in' unless @user
+    protected!
     erb :'users/edit'
   end
 
   put '/users/:id' do
-    current_user
-    @user.name = params[:name] if params[:name]
-    @user.email = params[:email] if params[:email]
-    @user.phone = params[:phone] if params[:phone]
-    @user.password = params[:password] if params[:password]
-    @user.save
+    protected!
+    current_user.name = params[:name] if params[:name]
+    current_user.email = params[:email] if params[:email]
+    current_user.phone = params[:phone] if params[:phone]
+    current_user.password = params[:password] if params[:password]
+    current_user.save
     redirect '/users/edit'
   end
+
+  get '/subscription/new' do
+    erb :'subscriptions/new'
+  end
+
 end

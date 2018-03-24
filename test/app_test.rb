@@ -116,4 +116,10 @@ class TestApp < Minitest::Test
     assert_equal('juan doe', user.name)
     follow_redirect!
   end
+
+  def test_new_subscription_page
+    get '/subscription/new'
+    assert last_response.ok?
+    assert last_response.body.include?('Tokenizar Tarjeta y Generar Cargo')
+  end
 end

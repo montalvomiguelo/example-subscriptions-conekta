@@ -1,0 +1,30 @@
+<h1>Tokenizar Tarjeta y Generar Cargo</h1>
+
+<form action="" method="POST" id="card-form">
+  <span class="card-errors"></span>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="card-name">Nombre del tarjetahabiente</label>
+      <input class="form-control" id="card-name" type="text" size="20" data-conekta="card[name]">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="card-number">Número de tarjeta de crédito</label>
+      <input class="form-control" id="card-number" type="text" size="20" data-conekta="card[number]">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="card-cvc">CVC</label>
+      <input class="form-control" id="card-cvc" type="text" size="4" data-conekta="card[cvc]">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-6">
+      <label for="card-exp-month">MM</label>
+      <input class="form-control" id="card-exp-month" type="text" size="2" data-conekta="card[exp_month]">
+    </div>
+    <div class="form-group col-md-6">
+      <label for="card-exp-year">AAAA</label>
+      <input class="form-control" id="card-exp-year" type="text" size="4" data-conekta="card[exp_year]">
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Pagar ahora!</button>
+</form>
