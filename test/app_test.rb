@@ -5,6 +5,18 @@ class TestApp < Minitest::Test
 
   def setup
     DatabaseCleaner.start
+
+    @conekta_customer = {
+      'id' => 'cus_23',
+      "payment_sources" => {
+        0 => {
+          'last4' => '4242',
+          'exp_month' => '12',
+          'exp_year' => '19',
+          'brand' => 'VISA',
+        }
+      }
+    }
   end
 
   def teardown
@@ -118,8 +130,25 @@ class TestApp < Minitest::Test
   end
 
   def test_new_subscription_page
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+    env 'rack.session', { :id => user.id }
     get '/subscription/new'
     assert last_response.ok?
     assert last_response.body.include?('Tokenizar Tarjeta y Generar Cargo')
+  end
+
+  def test_creating_a_customer_with_conekta
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+
+    env 'rack.session', { :id => user.id }
+
+    Conekta::Customer.expects(:create).returns(@conekta_customer)
+
+    post '/subscription', { :conektaTokenId => 'token' }
+
+    user.refresh
+
+    assert last_response.ok?
+    assert_equal('cus_23', user.conekta_id)
   end
 end

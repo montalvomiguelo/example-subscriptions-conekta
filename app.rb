@@ -1,6 +1,7 @@
 class App < Sinatra::Base
   set :method_override, true
   set :public_key, ENV['PUBLIC_KEY']
+  set :private_key, ENV['PRIVATE_KEY']
   enable :sessions
 
   helpers do
@@ -11,6 +12,18 @@ class App < Sinatra::Base
     def protected!
       return if current_user
       halt 401, 'Not authorized'
+    end
+
+    def create_conekta_customer
+      @conekta_customer = Conekta::Customer.create({
+        :name => current_user.name,
+        :email => current_user.email,
+        :phone => current_user.phone,
+        :payment_sources => [{
+          :type => 'card',
+          :token_id => params[:conektaTokenId]
+        }]
+      })
     end
   end
 
@@ -103,7 +116,23 @@ class App < Sinatra::Base
   end
 
   get '/subscription/new' do
+    protected!
     erb :'subscriptions/new'
+  end
+
+  post '/subscription' do
+    protected!
+
+    Conekta.api_key = settings.private_key
+
+    @conekta_customer = current_user.conekta_customer
+
+    unless @conekta_customer
+      create_conekta_customer
+      current_user.update(conekta_id: @conekta_customer['id'])
+    end
+
+    @conekta_customer.inspect
   end
 
 end

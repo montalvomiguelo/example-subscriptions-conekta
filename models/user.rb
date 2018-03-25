@@ -9,5 +9,9 @@ class User < Sequel::Model
     validates_presence :password
   end
 
+  def conekta_customer
+    return Conekta::Customer.find(conekta_id) if conekta_id
+  end
+
   attr_encrypted :password, key: 'This is a key that is 256 bits!!'
 end

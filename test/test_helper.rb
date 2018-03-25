@@ -6,6 +6,7 @@ Bundler.require(:default, ENV['RACK_ENV'])
 
 require 'minitest/autorun'
 require 'minitest/pride'
+require 'mocha/setup'
 
 DB = Sequel.connect(ENV['DATABASE_URL'])
 

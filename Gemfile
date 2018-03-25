@@ -5,6 +5,8 @@ gem 'sinatra'
 gem 'sequel'
 gem 'puma'
 gem 'attr_encrypted'
+gem 'conekta'
+gem 'mocha'
 
 group :production do
   gem 'mysql2'
