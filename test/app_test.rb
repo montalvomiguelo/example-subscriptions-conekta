@@ -8,6 +8,14 @@ class TestApp < Minitest::Test
 
     @conekta_customer = Conekta::Customer.new
     @conekta_customer['id'] = 'cus_23'
+    @conekta_customer['payment_sources'] = {
+      0 => {
+        'last4' => '4242',
+        'exp_month' => '12',
+        'exp_year' => '19',
+        'brand' => 'VISA',
+      }
+    }
 
     @conekta_subscription = Conekta::Subscription.new
     @conekta_subscription['id'] = 'sub_23'
@@ -176,6 +184,26 @@ class TestApp < Minitest::Test
 
     assert last_response.ok?
     assert last_response.body.include?(product_secret)
+
+  end
+
+  def test_persist_card_info
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+
+    env 'rack.session', { :id => user.id }
+
+    Conekta::Customer.expects(:create).returns(@conekta_customer)
+    Conekta::Customer.any_instance.stubs(:create_subscription).returns(@conekta_subscription)
+
+    post '/subscription', { :conektaTokenId => 'token' }
+
+    user.refresh
+
+    assert last_response.ok?
+    assert_equal('4242', user.card_last4)
+    assert_equal('12', user.card_exp_month)
+    assert_equal('19', user.card_exp_year)
+    assert_equal('VISA', user.card_brand)
 
   end
 end

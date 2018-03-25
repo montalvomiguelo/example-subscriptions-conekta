@@ -130,6 +130,10 @@ class App < Sinatra::Base
     unless @conekta_customer
       create_conekta_customer
       current_user.update(conekta_id: @conekta_customer['id'])
+      current_user.update(card_last4: @conekta_customer['payment_sources'][0]['last4'])
+      current_user.update(card_exp_month: @conekta_customer['payment_sources'][0]['exp_month'])
+      current_user.update(card_exp_year: @conekta_customer['payment_sources'][0]['exp_year'])
+      current_user.update(card_brand: @conekta_customer['payment_sources'][0]['brand'])
     end
 
     subscription = @conekta_customer.create_subscription(plan: 'plan-mensual')
