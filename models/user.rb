@@ -13,5 +13,9 @@ class User < Sequel::Model
     return Conekta::Customer.find(conekta_id) if conekta_id
   end
 
+  def subscribed?
+    conekta_subscription_id || (expires_at && Time.zone.now < expires_at)
+  end
+
   attr_encrypted :password, key: 'This is a key that is 256 bits!!'
 end

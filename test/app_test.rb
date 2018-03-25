@@ -162,4 +162,20 @@ class TestApp < Minitest::Test
     assert last_response.ok?
     assert_equal('sub_23', user.conekta_subscription_id)
   end
+
+  def test_show_product_secrent_only_for_subscribed_user
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd', conekta_subscription_id: 'sub_23', conekta_id: 'cus_23')
+
+    env 'rack.session', { :id => user.id }
+
+    product_name = 'Conekta Payments'
+    product_secret = 'Secret video link here'
+    product = create(:product, name: product_name, secret: product_secret)
+
+    get "/products/#{product.id}"
+
+    assert last_response.ok?
+    assert last_response.body.include?(product_secret)
+
+  end
 end

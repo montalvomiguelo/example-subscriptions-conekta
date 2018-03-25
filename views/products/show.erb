@@ -1,7 +1,13 @@
 <p><strong>Name:</strong> <%= @product.name %></p>
 <p><strong>Description:</strong> <%= @product.description %></p>
-<p><strong>Secret:</strong> <%= @product.secret %></p>
+<% if current_user && current_user.subscribed? %>
+  <p><strong>Secret:</strong> <%= @product.secret %></p>
+<% end %>
+
 <p>
   <a class="btn btn-link" href="/products/<%= @product.id %>/edit">Edit</a>
   <a class="btn btn-link" href="/products">Back</a>
+  <% if current_user && !current_user.subscribed? %>
+    <a class="btn btn-primary subscribe" href="/subscription/new">Subscribe monthly</a>
+  <% end %>
 </p>
