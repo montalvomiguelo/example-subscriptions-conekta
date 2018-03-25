@@ -6,17 +6,11 @@ class TestApp < Minitest::Test
   def setup
     DatabaseCleaner.start
 
-    @conekta_customer = {
-      'id' => 'cus_23',
-      "payment_sources" => {
-        0 => {
-          'last4' => '4242',
-          'exp_month' => '12',
-          'exp_year' => '19',
-          'brand' => 'VISA',
-        }
-      }
-    }
+    @conekta_customer = Conekta::Customer.new
+    @conekta_customer['id'] = 'cus_23'
+
+    @conekta_subscription = Conekta::Subscription.new
+    @conekta_subscription['id'] = 'sub_23'
   end
 
   def teardown
@@ -143,6 +137,7 @@ class TestApp < Minitest::Test
     env 'rack.session', { :id => user.id }
 
     Conekta::Customer.expects(:create).returns(@conekta_customer)
+    Conekta::Customer.any_instance.stubs(:create_subscription).returns(@conekta_subscription)
 
     post '/subscription', { :conektaTokenId => 'token' }
 
@@ -150,5 +145,21 @@ class TestApp < Minitest::Test
 
     assert last_response.ok?
     assert_equal('cus_23', user.conekta_id)
+  end
+
+  def test_subscribing_a_user_in_conekta
+    user = create(:user, name: 'john doe', email: 'jd@aol.com', phone: '+52181818181', password: 'jd')
+
+    env 'rack.session', { :id => user.id }
+
+    User.any_instance.stubs(:conekta_customer).returns(@conekta_customer)
+    Conekta::Customer.any_instance.expects(:create_subscription).returns(@conekta_subscription)
+
+    post '/subscription', { :conektaTokenId => 'token' }
+
+    user.refresh
+
+    assert last_response.ok?
+    assert_equal('sub_23', user.conekta_subscription_id)
   end
 end

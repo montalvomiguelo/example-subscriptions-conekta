@@ -132,6 +132,11 @@ class App < Sinatra::Base
       current_user.update(conekta_id: @conekta_customer['id'])
     end
 
+    subscription = @conekta_customer.create_subscription(plan: 'plan-mensual')
+
+    current_user.conekta_subscription_id = subscription['id']
+    current_user.save
+
     @conekta_customer.inspect
   end
 
