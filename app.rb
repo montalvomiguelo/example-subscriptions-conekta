@@ -170,4 +170,19 @@ class App < Sinatra::Base
     redirect '/users/edit'
   end
 
+  delete '/subscription' do
+    protected!
+
+    conekta_customer = current_user.conekta_customer
+
+    subscription = conekta_customer.subscription.cancel
+
+    current_user.expires_at = Time.at(subscription['billing_cycle_end'])
+    current_user.conekta_subscription_id = nil
+    current_user.save
+
+
+    redirect '/users/edit'
+  end
+
 end

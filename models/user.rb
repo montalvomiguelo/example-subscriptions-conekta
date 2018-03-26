@@ -14,7 +14,7 @@ class User < Sequel::Model
   end
 
   def subscribed?
-    conekta_subscription_id || (expires_at && Time.zone.now < expires_at)
+    conekta_subscription_id || (expires_at && Time.now < Time.parse(expires_at))
   end
 
   attr_encrypted :password, key: 'This is a key that is 256 bits!!'

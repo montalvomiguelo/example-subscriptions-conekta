@@ -19,7 +19,7 @@ class TestApp < Minitest::Test
 
     @conekta_subscription = Conekta::Subscription.new
     @conekta_subscription['id'] = 'sub_23'
-
+    @conekta_subscription['billing_cycle_end'] = 1524637699
 
     @conekta_card = Conekta::Card.new
     @conekta_card['id'] = 'src_23'
@@ -302,6 +302,36 @@ class TestApp < Minitest::Test
     assert_equal('MC', user.card_brand)
     assert_equal('10', user.card_exp_month)
     assert_equal('20', user.card_exp_year)
+    follow_redirect!
+  end
+
+  def test_cancel_a_subscription_in_conekta
+    user = create(:user, {
+      name: 'john doe',
+      email: 'jd@aol.com',
+      phone: '+52181818181',
+      password: 'jd',
+      conekta_id: 'cus_23',
+      card_last4: '4242',
+      card_exp_month: '12',
+      card_exp_year: '19',
+      card_brand: 'VISA',
+      conekta_subscription_id: 'sub_23',
+    })
+
+    env 'rack.session', { :id => user.id }
+
+    User.any_instance.stubs(:conekta_customer).returns(@conekta_customer)
+    Conekta::Customer.any_instance.stubs(:subscription).returns(@conekta_subscription)
+
+    Conekta::Subscription.any_instance.expects(:cancel).returns(@conekta_subscription)
+
+    delete '/subscription'
+
+    user.refresh
+
+    assert user.expires_at
+    assert_nil user.conekta_subscription_id
     follow_redirect!
   end
 

@@ -32,25 +32,38 @@
 
 <% if current_user && current_user.subscribed? %>
   <h4>Billing</h4>
+  <% if current_user.expires_at %>
+    <div class="alert alert-dark">
+      Your subscription expires at <%= current_user.expires_at %>
+    </div>
+  <% else %>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label for="brand">Brand</label>
+        <input id="brand" class="form-control" type="text" placeholder="<%= @user.card_brand %>" readonly>
+      </div>
 
-  <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="brand">Brand</label>
-      <input id="brand" class="form-control" type="text" placeholder="<%= @user.card_brand %>" readonly>
+      <div class="form-group col-md-4">
+        <label for="last4">Number</label>
+        <input id="last4" class="form-control" type="text" placeholder="**** **** **** <%= @user.card_last4 %>" readonly>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="exp">Exp</label>
+        <input id="exp" class="form-control" type="text" placeholder="<%= @user.card_exp_month %>/<%= @user.card_exp_year %>" readonly>
+      </div>
     </div>
 
-    <div class="form-group col-md-4">
-      <label for="last4">Number</label>
-      <input id="last4" class="form-control" type="text" placeholder="**** **** **** <%= @user.card_last4 %>" readonly>
-    </div>
-
-    <div class="form-group col-md-4">
-      <label for="exp">Exp</label>
-      <input id="exp" class="form-control" type="text" placeholder="<%= @user.card_exp_month %>/<%= @user.card_exp_year %>" readonly>
-    </div>
-  </div>
-
-  <p>
-    <a class="btn btn-secondary" href="/subscription/edit">Edit Card</a>
-  </p>
+    <ul class="list-inline">
+      <li class="list-inline-item">
+        <a class="btn btn-secondary" href="/subscription/edit">Edit Card</a>
+      </li>
+      <li class="list-inline-item">
+        <form action="/subscription" method="post">
+          <input type="hidden" name="_method" value="DELETE">
+          <button class="btn btn-danger">Cancel</button>
+        </form>
+      </li>
+    </ul>
+  <% end %>
 <% end %>
