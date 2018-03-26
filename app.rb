@@ -133,6 +133,8 @@ class App < Sinatra::Base
       current_user.update(card_brand: @conekta_customer['payment_sources'][0]['brand'])
     end
 
+    current_user.expires_at = nil if current_user.expires_at
+
     subscription = @conekta_customer.create_subscription(plan: 'plan-mensual')
 
     current_user.conekta_subscription_id = subscription['id']
