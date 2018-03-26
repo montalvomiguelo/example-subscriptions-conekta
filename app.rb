@@ -1,7 +1,6 @@
 class App < Sinatra::Base
   set :method_override, true
   set :public_key, ENV['PUBLIC_KEY']
-  set :private_key, ENV['PRIVATE_KEY']
   enable :sessions
 
   helpers do
@@ -123,8 +122,6 @@ class App < Sinatra::Base
   post '/subscription' do
     protected!
 
-    Conekta.api_key = settings.private_key
-
     @conekta_customer = current_user.conekta_customer
 
     unless @conekta_customer
@@ -142,6 +139,35 @@ class App < Sinatra::Base
     current_user.save
 
     @conekta_customer.inspect
+  end
+
+  get '/subscription/edit' do
+    protected!
+    erb :'subscriptions/edit'
+  end
+
+  put '/subscription' do
+    protected!
+
+    conekta_customer = current_user.conekta_customer
+
+    begin
+      card = conekta_customer.create_payment_source(type: 'card', token_id: params[:conektaTokenId])
+    rescue Conekta::ErrorList => error_list
+      for error_detail in error_list.details do
+        puts error_detail.message
+      end
+    end
+
+    conekta_customer.update(default_payment_source_id: card['id'])
+
+    current_user.card_brand = card['brand']
+    current_user.card_last4 = card['last4']
+    current_user.card_exp_month = card['exp_month']
+    current_user.card_exp_year = card['exp_year']
+    current_user.save
+
+    redirect '/users/edit'
   end
 
 end

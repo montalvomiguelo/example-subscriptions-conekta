@@ -19,6 +19,14 @@ class TestApp < Minitest::Test
 
     @conekta_subscription = Conekta::Subscription.new
     @conekta_subscription['id'] = 'sub_23'
+
+
+    @conekta_card = Conekta::Card.new
+    @conekta_card['id'] = 'src_23'
+    @conekta_card['last4'] = '4444'
+    @conekta_card['brand'] = 'MC'
+    @conekta_card['exp_month'] = '10'
+    @conekta_card['exp_year'] = '20'
   end
 
   def teardown
@@ -206,4 +214,95 @@ class TestApp < Minitest::Test
     assert_equal('VISA', user.card_brand)
 
   end
+
+  def test_edit_subscription_page
+    user = create(:user, {
+      name: 'john doe',
+      email: 'jd@aol.com',
+      phone: '+52181818181',
+      password: 'jd',
+      conekta_id: 'cus_23',
+      card_last4: '4242',
+      card_exp_month: '12',
+      card_exp_year: '19',
+      card_brand: 'VISA',
+      conekta_subscription_id: 'sub_23',
+    })
+
+    env 'rack.session', { :id => user.id }
+
+    get '/subscription/edit'
+
+    assert last_response.ok?
+    assert last_response.body.include?('Tokenizar Tarjeta y Actualizar Tarjeta')
+  end
+
+  def test_create_a_new_payment_source_in_conekta
+    user = create(:user, {
+      name: 'john doe',
+      email: 'jd@aol.com',
+      phone: '+52181818181',
+      password: 'jd',
+      conekta_id: 'cus_23',
+      card_last4: '4242',
+      card_exp_month: '12',
+      card_exp_year: '19',
+      card_brand: 'VISA',
+      conekta_subscription_id: 'sub_23',
+    })
+
+    env 'rack.session', { :id => user.id }
+
+    User.any_instance.stubs(:conekta_customer).returns(@conekta_customer)
+
+    Conekta::Customer.any_instance.expects(:create_payment_source).returns(@conekta_card)
+
+    @conekta_customer['default_payment_source_id'] = 'src_100'
+    @conekta_customer['payment_sources'] = {
+      0 => @conekta_card
+    }
+
+    Conekta::Customer.any_instance.stubs(:update).returns(@conekta_customer)
+
+    put '/subscription', { :conektaTokenId => 'token' }
+  end
+
+  def test_update_default_user_payment_source_in_conekta
+    user = create(:user, {
+      name: 'john doe',
+      email: 'jd@aol.com',
+      phone: '+52181818181',
+      password: 'jd',
+      conekta_id: 'cus_23',
+      card_last4: '4242',
+      card_exp_month: '12',
+      card_exp_year: '19',
+      card_brand: 'VISA',
+      conekta_subscription_id: 'sub_23',
+    })
+
+    env 'rack.session', { :id => user.id }
+
+    User.any_instance.stubs(:conekta_customer).returns(@conekta_customer)
+
+    Conekta::Customer.any_instance.stubs(:create_payment_source).returns(@conekta_card)
+
+    @conekta_customer['default_payment_source_id'] = 'src_100'
+    @conekta_customer['payment_sources'] = {
+      0 => @conekta_card
+    }
+
+    Conekta::Customer.any_instance.expects(:update).returns(@conekta_customer)
+
+    put '/subscription', { :conektaTokenId => 'token' }
+
+    user.refresh
+
+    assert_equal('4444', user.card_last4)
+    assert_equal('MC', user.card_brand)
+    assert_equal('10', user.card_exp_month)
+    assert_equal('20', user.card_exp_year)
+    follow_redirect!
+  end
+
 end
