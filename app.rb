@@ -1,7 +1,11 @@
 class App < Sinatra::Base
   set :method_override, true
   set :public_key, ENV['PUBLIC_KEY']
-  enable :sessions
+  enable :sessions, :logging
+
+  configure :development do
+    register Sinatra::Reloader
+  end
 
   helpers do
     def current_user
@@ -157,7 +161,7 @@ class App < Sinatra::Base
       card = conekta_customer.create_payment_source(type: 'card', token_id: params[:conektaTokenId])
     rescue Conekta::ErrorList => error_list
       for error_detail in error_list.details do
-        puts error_detail.message
+        logger.error error_detail.message
       end
     end
 
@@ -185,6 +189,14 @@ class App < Sinatra::Base
 
 
     redirect '/users/edit'
+  end
+
+  post '/webhooks/conekta' do
+    request.body.rewind
+    data = JSON.parse(request.body.read)
+    if data['type'] == 'charge.paid'
+      logger.info data
+    end
   end
 
 end

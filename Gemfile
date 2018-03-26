@@ -7,6 +7,7 @@ gem 'puma'
 gem 'attr_encrypted'
 gem 'conekta'
 gem 'mocha'
+gem 'sinatra-contrib'
 
 group :production do
   gem 'mysql2'
